@@ -32,6 +32,10 @@ pub struct UIConfig {
     #[serde(default = "default_mouse_bindings", deserialize_with = "deserialize_mouse_bindings")]
     pub mouse_bindings: Vec<MouseBinding>,
 
+    /// Show FPS in title.
+    #[serde(default, deserialize_with = "failure_default")]
+    pub fps: DefaultFalseBool,
+
     /// Debug options.
     #[serde(default, deserialize_with = "failure_default")]
     pub debug: Debug,
@@ -67,6 +71,7 @@ impl Default for UIConfig {
             mouse_bindings: default_mouse_bindings(),
             debug: Default::default(),
             alt_send_esc: Default::default(),
+            fps: Default::default(),
             background_opacity: Default::default(),
             live_config_reload: Default::default(),
             dynamic_title: Default::default(),
@@ -169,6 +174,15 @@ pub struct DefaultTrueBool(pub bool);
 impl Default for DefaultTrueBool {
     fn default() -> Self {
         DefaultTrueBool(true)
+    }
+}
+
+#[derive(Deserialize, Copy, Clone, Debug, PartialEq, Eq)]
+pub struct DefaultFalseBool(pub bool);
+
+impl Default for DefaultFalseBool {
+    fn default() -> Self {
+        DefaultFalseBool(false)
     }
 }
 

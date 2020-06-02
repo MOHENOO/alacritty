@@ -5,11 +5,8 @@ use log::error;
 use serde::de::Visitor;
 use serde::{Deserialize, Deserializer};
 
+use crate::config::ui_config::{DefaultTrueBool, Delta};
 use alacritty_terminal::config::{failure_default, LOG_TARGET_CONFIG};
-
-#[cfg(target_os = "macos")]
-use crate::config::ui_config::DefaultTrueBool;
-use crate::config::ui_config::Delta;
 
 /// Font config.
 ///
@@ -51,6 +48,10 @@ pub struct Font {
     #[cfg(target_os = "macos")]
     #[serde(deserialize_with = "failure_default")]
     use_thin_strokes: DefaultTrueBool,
+
+    /// Toggles rendering of font ligatures
+    #[serde(deserialize_with = "failure_default")]
+    ligatures: DefaultTrueBool,
 }
 
 impl Default for Font {
@@ -65,6 +66,7 @@ impl Default for Font {
             offset: Default::default(),
             #[cfg(target_os = "macos")]
             use_thin_strokes: Default::default(),
+            ligatures: Default::default(),
         }
     }
 }
@@ -103,6 +105,10 @@ impl Font {
     #[cfg(not(target_os = "macos"))]
     pub fn use_thin_strokes(&self) -> bool {
         false
+    }
+
+    pub fn ligatures(&self) -> bool {
+        self.ligatures.0
     }
 }
 

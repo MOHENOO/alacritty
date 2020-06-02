@@ -1,6 +1,6 @@
 //! Helpers for creating different cursor glyphs from font metrics.
 
-use crossfont::{BitmapBuffer, Metrics, RasterizedGlyph};
+use crossfont::{BitmapBuffer, Metrics, RasterizedGlyph, PLACEHOLDER_GLYPH};
 
 use alacritty_terminal::ansi::CursorStyle;
 
@@ -41,7 +41,7 @@ pub fn get_underline_cursor_glyph(width: usize, line_width: usize) -> Rasterized
 
     // Create a custom glyph with the rectangle data attached to it.
     RasterizedGlyph {
-        c: ' ',
+        c: PLACEHOLDER_GLYPH,
         top: line_width as i32,
         left: 0,
         height: line_width as i32,
@@ -57,7 +57,7 @@ pub fn get_beam_cursor_glyph(height: usize, line_width: usize) -> RasterizedGlyp
 
     // Create a custom glyph with the rectangle data attached to it
     RasterizedGlyph {
-        c: ' ',
+        c: PLACEHOLDER_GLYPH,
         top: height as i32,
         left: 0,
         height: height as i32,
@@ -86,7 +86,7 @@ pub fn get_box_cursor_glyph(height: usize, width: usize, line_width: usize) -> R
 
     // Create a custom glyph with the rectangle data attached to it.
     RasterizedGlyph {
-        c: ' ',
+        c: PLACEHOLDER_GLYPH,
         top: height as i32,
         left: 0,
         height: height as i32,
@@ -102,7 +102,7 @@ pub fn get_block_cursor_glyph(height: usize, width: usize) -> RasterizedGlyph {
 
     // Create a custom glyph with the rectangle data attached to it.
     RasterizedGlyph {
-        c: ' ',
+        c: PLACEHOLDER_GLYPH,
         top: height as i32,
         left: 0,
         height: height as i32,

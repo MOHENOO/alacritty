@@ -782,17 +782,46 @@ impl<N: Notify + OnResize> Processor<N> {
     {
         let mut scheduler = Scheduler::new();
 
+        let mut loop_helper = spin_sleep::LoopHelper::builder().build_without_target_rate();
+
         event_loop.run_return(|event, event_loop, control_flow| {
             if self.config.ui_config.debug.print_events {
                 info!("glutin event: {:?}", event);
             }
 
-            // Ignore all events we do not care about.
-            if Self::skip_event(&event) {
-                return;
-            }
-
             match event {
+                GlutinEvent::WindowEvent { event, .. }
+                    if matches!(
+                        event,
+                        WindowEvent::KeyboardInput { is_synthetic: true, .. }
+                            | WindowEvent::TouchpadPressure { .. }
+                            | WindowEvent::CursorEntered { .. }
+                            | WindowEvent::AxisMotion { .. }
+                            | WindowEvent::HoveredFileCancelled
+                            | WindowEvent::Destroyed
+                            | WindowEvent::HoveredFile(_)
+                            | WindowEvent::Touch(_)
+                            | WindowEvent::Moved(_)
+                    ) =>
+                {
+                    return
+                },
+                GlutinEvent::Suspended { .. }
+                | GlutinEvent::NewEvents { .. }
+                | GlutinEvent::LoopDestroyed => return,
+                // draw fps
+                GlutinEvent::MainEventsCleared => {
+                    if self.config.ui_config.fps.0 {
+                        if let Some(rate) = loop_helper.report_rate() {
+                            self.display.window.set_fps(rate);
+                        }
+                        loop_helper.loop_sleep();
+                        loop_helper.loop_start();
+                    } else {
+                        self.display.window.unset_fps();
+                    }
+                    return;
+                },
                 // Check for shutdown.
                 GlutinEvent::UserEvent(Event::TerminalEvent(TerminalEvent::Exit)) => {
                     *control_flow = ControlFlow::Exit;
@@ -1045,29 +1074,6 @@ impl<N: Notify + OnResize> Processor<N> {
             | GlutinEvent::RedrawEventsCleared
             | GlutinEvent::Resumed
             | GlutinEvent::LoopDestroyed => (),
-        }
-    }
-
-    /// Check if an event is irrelevant and can be skipped.
-    fn skip_event(event: &GlutinEvent<'_, Event>) -> bool {
-        match event {
-            GlutinEvent::WindowEvent { event, .. } => matches!(
-                event,
-                WindowEvent::KeyboardInput { is_synthetic: true, .. }
-                    | WindowEvent::TouchpadPressure { .. }
-                    | WindowEvent::CursorEntered { .. }
-                    | WindowEvent::AxisMotion { .. }
-                    | WindowEvent::HoveredFileCancelled
-                    | WindowEvent::Destroyed
-                    | WindowEvent::HoveredFile(_)
-                    | WindowEvent::Touch(_)
-                    | WindowEvent::Moved(_)
-            ),
-            GlutinEvent::Suspended { .. }
-            | GlutinEvent::NewEvents { .. }
-            | GlutinEvent::MainEventsCleared
-            | GlutinEvent::LoopDestroyed => true,
-            _ => false,
         }
     }
 
